@@ -22,7 +22,6 @@ function listenForTextInput() {
 function handleInputChange(event) {
   const input = event.target;
   comment = input.value; 
-  console.log("Updated comment:", comment);
 }
 
 async function checkTextWithPerspective(text) {
@@ -46,7 +45,6 @@ async function checkTextWithPerspective(text) {
 
     if (data && data.attributeScores && data.attributeScores.TOXICITY) {
       const toxicityScore = data.attributeScores.TOXICITY.summaryScore.value;
-      console.log("Toxicity Score:", toxicityScore);
       return toxicityScore > 0.2; 
     }
 
@@ -80,7 +78,6 @@ document.addEventListener("click", async function handleClick(event) {
     if (isToxic) {
       showPopup();
       //chrome.runtime.sendMessage({ action: "showPopup" });
-      console.log("Comment is NOT SAFE for submission");
     } else {
       skipNextClick = true; 
       target.click();  
@@ -141,7 +138,7 @@ function showPopup() {
         <button id="closePopup" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">&times;</button>
   </div>
   <hr class="logo-line"> 
- <div style="color: white; line-height: 1.5; padding-top: 10px;padding-bottom: 10px;">
+ <div style="color: white; font-size: 16px; line-height: 1.65; padding-top: 10px;padding-bottom: 10px;">
     <span>Your comment suggests an offensive tone</span><br>
     <span>Kindly rephrase your comment as this is an Open Source Project</span>
   </div>
@@ -158,7 +155,7 @@ function showPopup() {
       border: 0; 
       height: 0.5px; 
       background: white; 
-      margin: 10px 0; 
+      margin: 0px 0; 
     }
 
     .popup-overlay {
