@@ -47,7 +47,7 @@ async function checkTextWithPerspective(text) {
     if (data && data.attributeScores && data.attributeScores.TOXICITY) {
       const toxicityScore = data.attributeScores.TOXICITY.summaryScore.value;
       console.log("Toxicity Score:", toxicityScore);
-      return toxicityScore > 0.55; 
+      return toxicityScore > 0.2; 
     }
 
     return false; 
@@ -79,7 +79,7 @@ document.addEventListener("click", async function handleClick(event) {
 
     if (isToxic) {
       showPopup();
-      chrome.runtime.sendMessage({ action: "showPopup" });
+      //chrome.runtime.sendMessage({ action: "showPopup" });
       console.log("Comment is NOT SAFE for submission");
     } else {
       skipNextClick = true; 
@@ -136,14 +136,31 @@ function showPopup() {
   popup.innerHTML = `
     <div class="popup-overlay"></div>
     <div class="popup-content">
-      <img src="${chrome.runtime.getURL("images/logo.png")}" alt="Logo">
-<h2 style="color: white;">It seems there's a problem with your comment</h2>
-      <button id="closePopup">Close</button>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <img src="${chrome.runtime.getURL("images/logo.png")}" alt="Logo" height="50px" style="padding-bottom: 5px;">
+        <button id="closePopup" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">&times;</button>
+  </div>
+  <hr class="logo-line"> 
+ <div style="color: white; line-height: 1.5; padding-top: 10px;padding-bottom: 10px;">
+    <span>Your comment suggests an offensive tone</span><br>
+    <span>Kindly rephrase your comment as this is an Open Source Project</span>
+  </div>
     </div>
   `;
 
+
+  
   const style = document.createElement("style");
   style.textContent = `
+
+
+      .logo-line {
+      border: 0; 
+      height: 0.5px; 
+      background: white; 
+      margin: 10px 0; 
+    }
+
     .popup-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -161,16 +178,21 @@ function showPopup() {
       z-index: 9999;
       text-align: center;
       border-radius: 10px;
+      text-align: left;
     }
-    .popup-content button {
-      padding: 5px;
-      background: rgb(0, 0, 0);
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 10px;
-    }
+   #closePopup {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
   `;
+
+
+  
 
   document.head.appendChild(style);
   document.body.appendChild(popup);
