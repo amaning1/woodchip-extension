@@ -73,7 +73,7 @@ document.addEventListener("click", async function handleClick(event) {
     event.preventDefault();
     event.stopPropagation();
     
-    const isToxic = await checkTextWithPerspective(comment);
+    const isToxic =  checkAccessKey(comment);
 
     if (isToxic) {
       showPopup();
@@ -125,6 +125,27 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 listenForTextInput();
 
+function promptAccessKey(){
+  const prompt = window.prompt("Input Access Key");
+
+  chrome.storage.local.set({key:prompt}.then( () => {
+    console.log("key set")
+  }))
+}
+function checkAccessKey(text){
+
+  chrome.storage.local.get(["key"]).then((result) => {
+
+    if(result.key){
+      checkTextWithPerspective(text)
+    } else {
+      promptAccessKey();
+    }
+  });
+
+ 
+
+}
 function showPopup() {
   if (document.getElementById("githubCommentPopup")) return;
 
