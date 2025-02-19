@@ -1,5 +1,6 @@
+
 const textUrl = `http://localhost:8080/public/api/text`;
-const validateAccesKey = `http://localhost:8080/public/api/v1/key/verify`;
+const validateAccessKeyUrl = `/public/api/v1/key/verify`;
 let comment = "";
 let skipNextClick = false;
 let isProcessing = false;
@@ -29,12 +30,12 @@ async function checkTextWithPerspective(text) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: { text },
+        text: text ,
       }),
     });
 
     const data = await response.json();
-    console.log("Perspective API Response:", data);
+    console.log("data", data)
 
     if (data?.toxicityScore !== undefined) {
       const toxicityScore = data.toxicityScore;
@@ -117,7 +118,6 @@ function showAccessKey(resolve) {
               <h3 style="color: white">Access Key Required</h3>
 
       <div class="key-form">
-      <input type="text" id="emailInput" placeholder="Enter your email">
         <input type="text" id="accessKeyInput" placeholder="Enter your access key">
 
         <button id="submitKey" class="button">
@@ -146,7 +146,7 @@ function showAccessKey(resolve) {
         margin: 10px;
       }
 
-      #accessKeyInput, #emailInput {
+       #accessKeyInput {
         padding: 10px;
         font-size: 16px;
         border-radius: 5px;
@@ -217,92 +217,76 @@ function showAccessKey(resolve) {
     button.innerHTML = "Processing...";
   }
   
-  function showErrorBar() {
-    const errorBar = document.createElement("div");
-    errorBar.id = "errorBar";
-    errorBar.style.backgroundColor = "#ff4d4d";
-    errorBar.style.color = "white";
-    errorBar.style.textAlign = "center";
-    errorBar.style.padding = "10px";
-    errorBar.innerText = "Error: Invalid Access Key!";
-    document.body.insertBefore(errorBar, document.body.firstChild); 
+  function showNotificationBar(type, message) {
+    hideNotificationBar();
+  
+    const notificationBar = document.createElement("div");
+    notificationBar.id = "notificationBar";
+    notificationBar.style.backgroundColor = type === "error" ? "#ff4d4d" : "#1A7F37";
+    notificationBar.style.color = "white";
+    notificationBar.style.textAlign = "center";
+    notificationBar.style.padding = "10px";
+    notificationBar.innerText = message;
+  
+    const style = document.createElement("style");
+    style.textContent = `
+      #notificationBar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 10000;
+        animation: slideDown 0.3s ease-out;
+      }
+  
+      @keyframes slideDown {
+        from { transform: translateY(-100%); }
+        to { transform: translateY(0); }
+      }
+    `;
+  
+    document.head.appendChild(style);
+    document.body.insertBefore(notificationBar, document.body.firstChild);
+  
+   setTimeout(() => {
+      hideNotificationBar();
+    }, 5000);
   }
   
-  function hideErrorBar() {
-    const errorBar = document.getElementById("errorBar");
-    if (errorBar) {
-      errorBar.remove();
+  function hideNotificationBar() {
+    const notificationBar = document.getElementById("notificationBar");
+    if (notificationBar) {
+      notificationBar.remove();
     }
   }
   
-const errorBarstyle = document.createElement("style");
-errorBarstyle.textContent = `
-  #errorBar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: #ff4d4d;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    z-index: 10000;
-    animation: slideDown 0.3s ease-out;
-  }
 
-  @keyframes slideDown {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(0); }
-  }
-`;
-document.head.appendChild(errorBarstyle);
-
-function showErrorBar() {
-  hideErrorBar();
-  
-  const errorBar = document.createElement("div");
-  errorBar.id = "errorBar";
-  errorBar.innerText = "Error: Invalid Access Key!";
-  
-  document.body.insertBefore(errorBar, document.body.firstChild);
-  
-  setTimeout(() => {
-    hideErrorBar();
-  }, 5000);
-}
-
-function hideErrorBar() {
-  const existingErrorBar = document.getElementById("errorBar");
-  if (existingErrorBar) {
-    existingErrorBar.remove();
-  }
-}
 
 document.getElementById("submitKey").addEventListener("click", async () => {
   isProcessing = true;
   const key = document.getElementById("accessKeyInput").value;
-  const email = document.getElementById("emailInput").value;
   const submitButton = document.getElementById("submitKey");
 
   showProcessingState(submitButton);
 
   try {
-    const isValid = await validateAccessKey(email, key);
+    const isValid = await validateAccessKey(key);
     if (isValid) {
       isProcessing = true;
       chrome.storage.local.set({ key: key }, () => {
         console.log("Key set", key);
         accessKey.remove();
+        showNotificationBar("normal", "Access Key Validated!")
         resolve(true);
       });
     } else {
       isProcessing = false;
-      showErrorBar(); 
+      showNotificationBar("error", "Invalid Access Key"); 
     }
   } catch (error) {
     console.error("Error validating access key:", error);
     isProcessing = false;
-    showErrorBar();
+    showNotificationBar("error", "Invalid Access Key");
   } finally {
     submitButton.innerHTML = "Submit";
   }
@@ -317,25 +301,48 @@ document.getElementById("submitKey").addEventListener("click", async () => {
   });
 }
 
-async function validateAccessKey(email, key){
+async function validateAccessKey(key) {
+  const decodedKey = decodeSecretKey(key);
+
+  if (!decodedKey) {
+    console.error("Failed to decode the secret key.");
+    return false;
+  }
 
   try {
-    const response = await fetch(validateAccesKey, {
+    const response = await fetch(`${decodedKey.serverBaseUrl}${validateAccessKeyUrl}`, {
       method: "POST",
       headers: {
-        "Content-type": "application/json"
+        "Content-type": "application/json",
       },
       body: JSON.stringify({
-        email: email,
-        secret: key
+        email: decodedKey.email,
+        secret: decodedKey.secretPlain, 
       }),
     });
 
     const data = await response.json();
-    console.log("data", data)
-    return data.verified;
-  } catch(error){
-    console.error("Error validating Access Key")
+    return data.verified; 
+  } catch (error) {
+    console.error("Error validating Access Key:", error);
+    return false;
+  }
+}
+
+function decodeSecretKey(key) {
+  try {
+    const decodedKey = atob(key, "base64").toString("utf-8");
+
+    const [email, serverBaseUrl, secretPlain] = decodedKey.split("::");
+
+    return {
+      email: email,
+      serverBaseUrl: serverBaseUrl,
+      secretPlain: secretPlain,
+    };
+  } catch (error) {
+    console.error("Error decoding secret key:", error);
+    return null;
   }
 }
 
