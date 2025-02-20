@@ -274,7 +274,6 @@ document.getElementById("submitKey").addEventListener("click", async () => {
     if (isValid) {
       isProcessing = true;
       chrome.storage.local.set({ key: key }, () => {
-        console.log("Key set", key);
         accessKey.remove();
         showNotificationBar("normal", "Access Key Validated!")
         resolve(true);
@@ -426,8 +425,4 @@ const observer = new MutationObserver(() => {
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
-
-chrome.storage.local.clear();
-
-listenForTextInput();
 
