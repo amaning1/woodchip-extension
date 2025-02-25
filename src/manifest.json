@@ -3,9 +3,7 @@
   "name": "EXTENSION 2",
   "version": "1.0",
   "description": "Disables the comment button if a bad word is typed in the comment box on GitHub issue detail pages.",
-  "action": {
-    "default_popup": "popup.html"
-  },
+ 
   "permissions": [
     "activeTab",
     "scripting",
@@ -15,9 +13,6 @@
   "host_permissions": [
     "https://github.com/*"
   ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "content_scripts": [
     {
       "matches": [
