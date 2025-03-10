@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "EXTENSION 2",
+  "name": "Woodchip Extension",
   "version": "1.0",
   "description": "Disables the comment button if a bad word is typed in the comment box on GitHub issue detail pages.",
  
