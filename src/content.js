@@ -19,7 +19,6 @@ function listenForTextInput() {
 function handleInputChange(event) {
   const input = event.target;
   comment = input.value;
-  let test = "this is damn stupid code"
 }
 
 async function checkTextWithPerspective(text) {
