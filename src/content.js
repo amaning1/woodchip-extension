@@ -1,4 +1,3 @@
-const key = "fNyvbrCaULgqzIyVc6YgG";
 const textUrl = `http://localhost:8080/public/api/text`;
 const validateAccessKeyUrl = `/public/api/v1/key/verify`;
 let comment = "";
