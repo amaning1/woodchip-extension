@@ -1,4 +1,4 @@
-
+const key = "fNyvbrCaULgqzIyVc6YgG";
 const textUrl = `http://localhost:8080/public/api/text`;
 const validateAccessKeyUrl = `/public/api/v1/key/verify`;
 let comment = "";
@@ -20,6 +20,7 @@ function listenForTextInput() {
 function handleInputChange(event) {
   const input = event.target;
   comment = input.value;
+  let test = "this is damn stupid code"
 }
 
 async function checkTextWithPerspective(text) {
@@ -94,7 +95,7 @@ async function checkAccessKey(text) {
       if (result.key) {
         resolve(true);
       } else {
-       showAccessKey(resolve);
+       showAccessKey.then(resolve);
       }
     });
   });
